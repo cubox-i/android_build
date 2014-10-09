@@ -1390,7 +1390,7 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
 
 .PHONY: otapackage bacon
 otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
-bacon: $(TARGET_BOOTLOADER_IMAGE) $(TARGET_PREBUILT_KERNEL) $(INTERNAL_OTA_PACKAGE_TARGET)
+bacon: $(INTERNAL_OTA_PACKAGE_TARGET)
 
 # -----------------------------------------------------------------
 # The update package
