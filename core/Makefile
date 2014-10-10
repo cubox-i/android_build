@@ -762,23 +762,22 @@ RECOVERY_RESOURCE_ZIP :=
 endif
 
 .PHONY: bootloader
-ifneq ($(strip $(TARGET_BOOTLOADER_CONFIG)),)
-BOOTLOADER_CROSS_TOOLCHAIN := `pwd`/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
-BOOTLOADER_ENV := ARCH=arm CROSS_COMPILE=$(BOOTLOADER_CROSS_TOOLCHAIN)
-HOST_PROCESSOR := $(shell cat /proc/cpuinfo | grep processor | wc -l)
-TARGET_BOOTLOADER_IMAGE := $(PRODUCT_OUT)/u-boot.img $(PRODUCT_OUT)/SPL
+ifeq ($(BOARD_USES_IMX_UBOOTLOADER),true)
+BOOTLOADER_CROSS_TOOLCHAIN := $(ANDROID_BUILD_TOP)/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
+BOOTLOADER_ENV := ARCH=$(TARGET_ARCH) CROSS_COMPILE=$(BOOTLOADER_CROSS_TOOLCHAIN)
+INSTALLED_BOOTLOADER_TARGET := $(PRODUCT_OUT)/u-boot.img $(PRODUCT_OUT)/SPL
 
-BOOTLOADER_PATH := bootable/bootloader/uboot-imx/
+BOOTLOADER_PATH := $(TARGET_BOOTLOADER_SOURCE)
 BOOTLOADER_CONFIG_FILE := $(BOOTLOADER_PATH)/include/config.h
 
-bootloader: $(TARGET_BOOTLOADER_IMAGE)
+bootloader: $(INSTALLED_BOOTLOADER_TARGET)
 
-$(TARGET_BOOTLOADER_IMAGE):
-	$(MAKE) -C bootable/bootloader/uboot-imx/ distclean $(BOOTLOADER_ENV);
-	$(MAKE) -C bootable/bootloader/uboot-imx/ $(TARGET_BOOTLOADER_CONFIG);
-	$(MAKE) -C bootable/bootloader/uboot-imx/ $(BOOTLOADER_ENV);
-	install -D bootable/bootloader/uboot-imx/u-boot.img $(PRODUCT_OUT)/u-boot.img
-	install -D bootable/bootloader/uboot-imx/SPL $(PRODUCT_OUT)/SPL
+$(INSTALLED_BOOTLOADER_TARGET):
+	$(MAKE) -C $(BOOTLOADER_PATH)/ distclean $(BOOTLOADER_ENV);
+	$(MAKE) -C $(BOOTLOADER_PATH)/ $(TARGET_BOOTLOADER_CONFIG);
+	$(MAKE) -C $(BOOTLOADER_PATH)/ $(BOOTLOADER_ENV);
+	install -D $(BOOTLOADER_PATH)/u-boot.img $(PRODUCT_OUT)/u-boot.img
+	install -D $(BOOTLOADER_PATH)/SPL $(PRODUCT_OUT)/SPL
 else
 bootloader:
 endif
@@ -1251,6 +1250,7 @@ endif
 # directories are up-to-date.
 $(BUILT_TARGET_FILES_PACKAGE): \
 		$(INSTALLED_BOOTIMAGE_TARGET) \
+		$(INSTALLED_BOOTLOADER_TARGET) \
 		$(INSTALLED_RADIOIMAGE_TARGET) \
 		$(INSTALLED_RECOVERYIMAGE_TARGET) \
 		$(INSTALLED_SYSTEMIMAGE) \
